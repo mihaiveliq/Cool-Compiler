@@ -1,0 +1,81 @@
+literal(value) ::= "li $a0 <value>"
+
+plus(e1, e2) ::= <<
+<e1>
+sw $a0 0($sp)
+addiu $sp $sp -4
+<e2>
+lw $t1 4($sp)
+addiu $sp $sp 4
+add $a0 $t1 $a0
+>>
+
+minus(e1, e2) ::= <<
+<e1>
+sw $a0 0($sp)
+addiu $sp $sp -4
+<e2>
+lw $t1 4($sp)
+addiu $sp $sp 4
+sub $a0 $t1 $a0
+>>
+
+sequence(e) ::= "<e; separator=\"\n\">"
+
+program_init() ::= <<
+    .data
+    .align  2
+    .globl  class_nameTab
+    .globl  Int_protObj
+    .globl  String_protObj
+    .globl  bool_const0
+    .globl  bool_const1
+    .globl  Main_protObj
+    .globl  _int_tag
+    .globl  _string_tag
+    .globl  _bool_tag
+_int_tag:
+    .word   2
+_string_tag:
+    .word   3
+_bool_tag:
+    .word   4
+>>
+
+bool_consts() ::= <<
+bool_const0:
+    .word   4
+    .word   4
+    .word   Bool_dispTab
+    .word   0
+bool_const1:
+    .word   4
+    .word   4
+    .word   Bool_dispTab
+    .word   1
+>>
+
+object_init(label, init_instr) ::= <<
+<label>
+    addiu   $sp $sp -12
+    sw      $fp 12($sp)
+    sw      $s0 8($sp)
+    sw      $ra 4($sp)
+    addiu   $fp $sp 4
+    move    $s0 $a0
+<init_instr>
+    move    $a0 $s0
+    lw      $fp 12($sp)
+    lw      $s0 8($sp)
+    lw      $ra 4($sp)
+    addiu   $sp $sp 12
+    jr      $ra
+>>
+
+let(param) ::= <<
+addiu   $fp $sp 4
+addiu   $sp $sp -4
+move    $s0 $a0
+la      $a0 <param>
+sw      $a0 -4($fp)
+>>
